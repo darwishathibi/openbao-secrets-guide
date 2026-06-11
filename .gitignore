@@ -1,0 +1,14 @@
+# Secret zero and local env — NEVER commit
+.env
+.env.*
+!.env.example
+
+# OpenBao local data (if you ever run file/raft storage locally)
+.openbao-data/
+
+# Editor / OS noise
+.idea/
+.vs/
+.vscode/
+*.user
+.DS_Store
