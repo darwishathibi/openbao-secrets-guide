@@ -21,9 +21,9 @@ OpenBao centralizes secrets into one access-controlled, versioned, audited store
 ④  Inject          Values → the framework's native config    → app reads config as normal
 ```
 
-**Steps ② and ③ are identical in every language** — they're just HTTP calls to OpenBao, wrapped by a client library. **Steps ① and ④ are the only real differences:** how each framework does the AppRole login, and where its "native config" lives.
+**Steps ② and ③ are just HTTP calls to OpenBao**, wrapped by the VaultSharp client library. **Steps ① and ④ are where the integration work lives:** how the app does the AppRole login, and where its "native config" lives.
 
-That's the whole insight. A `.NET` `IConfiguration` provider, a Node frozen-config object, a Pydantic `Settings`, a Spring `Environment`, a Go struct — they're all just "step ④" for their ecosystem.
+That's the whole insight. In .NET, "native config" is `IConfiguration` — so step ④ is a custom configuration provider that reads from OpenBao instead of `appsettings.json`.
 
 ## Why authenticate with AppRole?
 

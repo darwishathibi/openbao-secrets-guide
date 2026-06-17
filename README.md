@@ -1,14 +1,14 @@
 # OpenBao Secrets Guide
 
-> A framework-agnostic guide to wiring **application secrets** through [OpenBao](https://openbao.org) — the open-source, community-run fork of HashiCorp Vault. Learn the pattern once, then copy-paste it into .NET, Node.js, Python, Spring Boot, or Go.
+> A practical guide to wiring **application secrets** through [OpenBao](https://openbao.org) — the open-source, community-run fork of HashiCorp Vault — in **.NET**.
 
-Most apps keep their JWT signing key, SMTP password, and database credentials in a `.env` file or environment variables. That works — until the credential leaks, until you need to rotate it, until an auditor asks "how often do these change?" This guide shows how to move those secrets into OpenBao so they're **centralized, access-controlled, versioned, and (optionally) short-lived and auto-rotating** — and it shows it in five languages, because the pattern is the same everywhere.
+Most apps keep their JWT signing key, SMTP password, and database credentials in a `.env` file or environment variables. That works — until the credential leaks, until you need to rotate it, until an auditor asks "how often do these change?" This guide shows how to move those secrets into OpenBao so they're **centralized, access-controlled, versioned, and (optionally) short-lived and auto-rotating**.
 
 ---
 
 ## The one pattern you actually need to learn
 
-Every framework integration is the same four steps. Only steps ① and ④ differ between languages.
+The integration is the same four steps every time.
 
 ```mermaid
 sequenceDiagram
@@ -34,29 +34,25 @@ sequenceDiagram
 1. **Authenticate** — the app logs in with an **AppRole** (`role_id` + `secret_id`). `secret_id` is the one irreducible "secret zero."
 2. **Read static secrets** — fetch values from the **KV v2** store (JWT key, SMTP creds, etc.).
 3. **Read dynamic secrets** *(advanced)* — ask the **database engine** to mint a fresh, short-lived DB user that auto-expires.
-4. **Inject into native config** — drop the values into wherever your framework already reads config (`IConfiguration`, `process.env`, Pydantic `Settings`, Spring `Environment`, a Go struct). The rest of your app never knows OpenBao exists.
+4. **Inject into native config** — drop the values into wherever your app already reads config (.NET's `IConfiguration`, via a custom provider). The rest of your app never knows OpenBao exists.
 
-That isolation — OpenBao only swaps the *source* of config — is what makes this a drop-in retrofit in any stack.
+That isolation — OpenBao only swaps the *source* of config — is what makes this a drop-in retrofit.
 
 ---
 
-## Pick your stack
+## The .NET recipe
 
 | Framework | Client library | Native config home | Recipe |
 |---|---|---|---|
 | **.NET** | VaultSharp | `IConfiguration` (custom provider) | [recipes/dotnet.md](recipes/dotnet.md) |
-| **Node.js / Express** | `node-vault` | `process.env` + frozen config object | [recipes/node-express.md](recipes/node-express.md) |
-| **Python / FastAPI** | `hvac` | Pydantic `BaseSettings` | [recipes/python-fastapi.md](recipes/python-fastapi.md) |
-| **Spring Boot (Java)** | Spring Cloud Vault | Spring `Environment` / `@Value` | [recipes/spring-boot.md](recipes/spring-boot.md) |
-| **Go** | `hashicorp/vault/api` | typed struct / Viper | [recipes/go.md](recipes/go.md) |
 
-Each recipe covers the same four tasks: **AppRole login · read a KV secret · inject into config · (advanced) dynamic DB credentials.**
+The recipe covers the same four tasks: **AppRole login · read a KV secret · inject into config · (advanced) dynamic DB credentials.**
 
 ---
 
 ## Learn it properly
 
-The recipes are copy-paste. The `docs/` walk through the *why*:
+The recipe is copy-paste. The `docs/` walk through the *why*:
 
 1. **[The Pattern](docs/01-the-pattern.md)** — the universal flow, AppRole, and why secrets stay behind your config layer.
 2. **[Static Secrets (KV v2)](docs/02-static-secrets-kv.md)** — storing and reading JWT keys, SMTP creds, connection strings. The `/data/` quirk. Read-once-at-boot and what rotation means.
@@ -82,7 +78,7 @@ JWT_SECRET=$(openssl rand -hex 32) \
 # 3. The script prints a role_id and secret_id — feed those to your app.
 ```
 
-Then open your framework's recipe and wire it up. Browse what you seeded at **http://127.0.0.1:8200/ui** (token: `dev-root-token`).
+Then open the [.NET recipe](recipes/dotnet.md) and wire it up. Browse what you seeded at **http://127.0.0.1:8200/ui** (token: `dev-root-token`).
 
 > ⚠️ Dev-mode stores everything **in memory** — `docker rm` wipes it. That's intentional (it's disposable). Production uses persistent Raft storage and manual unsealing — see [docs/05](docs/05-dev-vs-prod-sealing.md).
 

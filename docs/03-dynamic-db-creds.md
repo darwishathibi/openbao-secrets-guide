@@ -76,7 +76,7 @@ Most ORMs fix a connection string at startup and pool connections under it. But 
 - On rotation, the cache flips to new creds; **new** connections open with the new user. Existing pooled connections finish their work and drain naturally.
 - OpenBao only `DROP`s the old user at lease end, after a grace window — so in-flight connections aren't cut off.
 
-In .NET this means resolving the `DbContext` connection per-scope from the factory rather than the once-captured string. (See the [.NET recipe](../recipes/dotnet.md#4-advanced-dynamic-database-credentials).) Spring Cloud Vault does the lease renewal *and* datasource rotation for you — the least-effort dynamic story of the five.
+In .NET this means resolving the `DbContext` connection per-scope from the factory rather than the once-captured string. (See the [.NET recipe](../recipes/dotnet.md#4-advanced-dynamic-database-credentials).)
 
 ## A migration footgun: who runs schema migrations?
 

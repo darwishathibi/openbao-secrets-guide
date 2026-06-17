@@ -29,7 +29,7 @@ bao kv put myapp/jwt jwt_secret="$(openssl rand -hex 32)"
 bao kv put myapp/smtp smtp_user=mailer smtp_pass='s3cr3t'
 ```
 
-> **Tip:** store each value keyed by the exact name your framework's config expects (`Jwt:Secret` for .NET, `JWT_SECRET` for Node, etc.). Then "inject into config" is a straight copy — no remapping.
+> **Tip:** store each value keyed by the exact name your config expects (e.g. `Jwt:Secret` for .NET's `IConfiguration`). Then "inject into config" is a straight copy — no remapping.
 
 ## The `/data/` quirk (the one thing that trips everyone)
 
@@ -46,7 +46,7 @@ If a read works but your policy denies access, this mismatch is almost always wh
 client.kv.v2.read(path="jwt", mount="myapp")  →  { "jwt_secret": "..." }
 ```
 
-Then overlay the result onto your framework's native config layer at startup. See your [recipe](../recipes/) for the idiomatic wiring; the [.NET recipe](../recipes/dotnet.md) shows the custom `IConfiguration` provider, which is the cleanest expression of "OpenBao as a config source."
+Then overlay the result onto .NET's `IConfiguration` at startup. The [.NET recipe](../recipes/dotnet.md) shows the custom configuration provider, which is the cleanest expression of "OpenBao as a config source."
 
 ## Read-once-at-boot, and what rotation means
 
@@ -54,7 +54,7 @@ Static secrets are read **once, at application startup**. That has a consequence
 
 > **Rotating a static secret in OpenBao does not affect a running app until it restarts.**
 
-This is fine — and usually desirable — for values like a JWT key you change rarely. The flow is: update the value in OpenBao → restart the app → new value is live. (Some integrations, like Spring Cloud Vault's `@RefreshScope`, can live-reload; most read-once. Don't add live-reload complexity unless you actually need it.)
+This is fine — and usually desirable — for values like a JWT key you change rarely. The flow is: update the value in OpenBao → restart the app → new value is live. (`IConfiguration` providers *can* be wired to reload, but most setups read-once. Don't add live-reload complexity unless you actually need it.)
 
 If you store your **database connection string** as a static KV secret (a perfectly good choice for simpler apps), the same rule applies: change it in OpenBao, restart to pick it up. If you want credentials that rotate *without* restarts and expire on their own, that's the [dynamic database engine](03-dynamic-db-creds.md).
 
